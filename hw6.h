@@ -20,3 +20,6 @@ int timeval_to_msec(struct timeval *t);
 void msec_to_timeval(int millis, struct timeval *out_timeval);
 int current_msec();
 
+
+#define NOTHING -1
+#define ACK_RCV -2

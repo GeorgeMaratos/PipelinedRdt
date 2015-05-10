@@ -11,8 +11,6 @@
 #include <netinet/in.h>
 #include "hw6.h"
 
-#define NOTHING -1
-#define ACK_RCV -2
 
 int sequence_number;
 int RTT = 0;
@@ -167,6 +165,7 @@ naive sender (socket)
 //	    printf("time%d\n",diff / 100000);
 	    if((int)(diff) >= RTT) //on the timeout I need to send the right sequence number packet
 	      send(sock, packet, sizeof(struct hw6_hdr)+len, 0);
+	    return NOTHING;
 	  break; 
 	  case ACK_RCV:   //process it and set sending packet accordingly
 	    sequence_number++;
