@@ -46,7 +46,6 @@ int main(int argc, char** argv) {
 	int starttime = current_msec();
 	int totalbytes = 0;
         int max_index = 0, index = 0;
-	int send_return;
 
 	int readbytes;
 	while(read_bytes[index] = fread(buf,1,sizeof(buf),stdin)) { //reads in from stdin and sends it sizeof(buf) at a time
@@ -57,12 +56,8 @@ int main(int argc, char** argv) {
 	}
 
 	index = 0;
-        send_return = 0;
 	while(index < max_index) {
-		send_return = rel_send(sock,file[index],read_bytes[index]);
-		if(send_return == NOTHING)
-		  index++;
-		else index = send_return;
+		index = rel_send(sock,file[index],read_bytes[index]);
 		printf("sent a packet\n");
 	}
 /*
