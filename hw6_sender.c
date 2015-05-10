@@ -12,6 +12,8 @@
 
 #define Pipeline 1
 
+extern int acks_received[100];
+
 int main(int argc, char** argv) {	
 	if(argc<3) { fprintf(stderr,"Usage: hw6_sender <remote host> <port>\n"); exit(1);}
 
@@ -48,6 +50,8 @@ int main(int argc, char** argv) {
 	int starttime = current_msec();
 	int totalbytes = 0;
         int max_index = 0, index = 0;
+	int acked_so_far = 0;
+	int completed_transfer = 0;
 
 	int readbytes;
 	while(read_bytes[index] = fread(buf,1,sizeof(buf),stdin)) { //reads in from stdin and sends it sizeof(buf) at a time
@@ -66,15 +70,33 @@ int main(int argc, char** argv) {
   }
   else {
   //here I will have a pipeline
+
+    while(!completed_transfer) {
     	//first send all packets in the pipe
 	while(index < max_index) {
           pipeline_send(index,sock,file[index],read_bytes[index]);
 	  //have a pipeline reader to get all the acks
-	  
+	  pipeline_reader(sock);
 	  index++;
 	}
 	//finish reading the whole pipe
+	while(pipeline_reader(sock));
 	//then determine if it needs to go back 
+	index = 0;
+	acked_so_far = 0;	
+	while(index < max_index) {
+	  if(acks_received[index] == 0) {
+	    acked_so_far = index;
+	    index = max_index;
+	  }
+	  index++;
+        }
+	if(acked_so_far == max_index - 1)
+	  completed_transfer = 1;
+	else 
+	  index = acked_so_far;
+    }
+
   }
 /*
   new sender

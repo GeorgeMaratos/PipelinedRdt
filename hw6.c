@@ -50,6 +50,45 @@ int rel_rtt(int socket) {
 
 int acks_received[100] = {0}; //assumes max ack is 100, does not reset be careful
 
+int pipeline_reader(int socket) {
+
+  //data structures to read the packet
+  char packet[MAX_PACKET];
+  memset(&packet,0,sizeof(packet));
+  struct hw6_hdr* hdr=(struct hw6_hdr*)packet;	
+
+  struct sockaddr_in fromaddr;
+  unsigned int addrlen=sizeof(fromaddr);	
+  int recv_count;
+
+//variables for timeout
+  struct timeval tv;
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+
+  fd_set fd;
+  FD_ZERO(&fd);
+  FD_SET(socket,&fd);
+
+  int retval;
+
+  //variables for catching acks
+  int sequence_number;
+
+  //operations
+  retval = select(socket+1,&fd,NULL,NULL,&tv);
+  if(retval == -1) printf("select error\n");
+  if(retval){  
+    recv_count = recvfrom(socket, packet, MAX_PACKET, 0, (struct sockaddr*)&fromaddr, &addrlen);
+    sequence_number = ntohl(hdr->ack_number);
+    acks_received[sequence_number]++;
+    return 1;
+  }
+  return 0;
+}
+
+
+
 int wait_for_ack(int seq_num, int socket) { //wait for ack is done it just needs the right timeout
 /*
 naive wait_for_ack (sq_num, socket)
