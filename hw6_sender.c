@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
         int max_index = 0, index = 0;
 
 	int readbytes;
-	while(readbytes=fread(buf,1,sizeof(buf),stdin)) { //reads in from stdin and sends it sizeof(buf) at a time
+	while(read_bytes[index] =fread(buf,1,sizeof(buf),stdin)) { //reads in from stdin and sends it sizeof(buf) at a time
 		totalbytes+=read_bytes[index];
 //		rel_send(sock, buf, readbytes);							 
 //		printf("sent a packet\n");	
