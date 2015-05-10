@@ -126,12 +126,12 @@ int sequence_desired = 0;
 
 int pipeline_sequence = 0;
 
-void pipeline_send(int sock, void *buf, int len) {
+void pipeline_send(int sequence, int sock, void *buf, int len) {
 
 //start making packet
 	char packet[1400];
 	struct hw6_hdr *hdr = (struct hw6_hdr*)packet;
-	hdr->sequence_number = htonl(pipeline_sequence++);
+	hdr->sequence_number = htonl(sequence);
 	memcpy(hdr+1,buf,len); //hdr+1 is where the payload starts
 	send(sock, packet, sizeof(struct hw6_hdr)+len, 0);
 

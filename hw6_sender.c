@@ -66,10 +66,15 @@ int main(int argc, char** argv) {
   }
   else {
   //here I will have a pipeline
+    	//first send all packets in the pipe
 	while(index < max_index) {
-          pipeline_send(sock,file[index],read_bytes[index]);
+          pipeline_send(index,sock,file[index],read_bytes[index]);
+	  //have a pipeline reader to get all the acks
+	  
 	  index++;
 	}
+	//finish reading the whole pipe
+	//then determine if it needs to go back 
   }
 /*
   new sender
