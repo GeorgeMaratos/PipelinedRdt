@@ -104,7 +104,8 @@ void cal_rtt(clock_t a, clock_t b) {
   RTT = (int)((0.875)*(RTT) + (0.275)*(int)(b - a));
 //  printf("RTT:%d\n");
 }
-void rel_send(int sock, void *buf, int len)  
+
+void rel_send(int sock, void *buf, int len)  //have rel_send, return the next sequence it wants
 {
 /*  
 naive sender (socket)
@@ -140,13 +141,13 @@ naive sender (socket)
 	send(sock, packet, sizeof(struct hw6_hdr)+len, 0);
 //3
 	while(1) {
-	  if(wait_for_ack(sequence_number,sock) == NOTHING) {
+	  if(wait_for_ack(sequence_number,sock) == NOTHING) { //here I want to keep sending packets
 	    diff = clock() - start;
 //	    printf("time%d\n",diff / 100000);
-	    if((int)(diff) >= RTT)
+	    if((int)(diff) >= RTT) //on the timeout I need to send the right sequence number packet
 	      send(sock, packet, sizeof(struct hw6_hdr)+len, 0);
 	  }
-	  if(wait_for_ack(sequence_number,sock) == ACK_RCV) {
+	  if(wait_for_ack(sequence_number,sock) == ACK_RCV) {  //process it and set sending packet accordingly
 	    sequence_number++;
 	    cal_rtt(start,clock());
   	    return;
@@ -199,6 +200,8 @@ naive receiver (socket)
 	//if sequence is lower than expected, then send last ack and wait for response
 	//if sequence is higher than expected, then do the same
 
+//no change needed for now, but should check for sending right ack
+
      while(1) {
 	seq = ntohl(hdr->sequence_number);
 	if(seq == seq_expected) {
@@ -212,7 +215,6 @@ naive receiver (socket)
 	}
 	else{
 	  hdr->ack_number = htonl(seq_expected - 1);
-//	  printf("sending ack:%d\n",ntohl(hdr->ack_number));
 	  send(sock, packet, sizeof(struct hw6_hdr)+length, 0);   //not sure if length is supposed to be here
 	  recv_count = recvfrom(sock, packet, MAX_PACKET, 0, (struct sockaddr*)&fromaddr, &addrlen);		//1
 	}

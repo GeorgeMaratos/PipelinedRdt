@@ -37,17 +37,38 @@ int main(int argc, char** argv) {
 	}	
 
 	char buf[MAX_PACKET-sizeof(struct hw6_hdr)];	
+	//adding 2d array for file
+	char file[100][MAX_PACKET-sizeof(struct hw6_hdr)];
+	int read_bytes[100];
+
 	memset(&buf,0,sizeof(buf));
 
 	int starttime = current_msec();
 	int totalbytes = 0;
+        int max_index = 0, index = 0;
 
 	int readbytes;
-	while(readbytes=fread(buf,1,sizeof(buf),stdin)) {
-		totalbytes+=readbytes;
-		rel_send(sock, buf, readbytes);							 
-		printf("sent a packet\n");
+	while(readbytes=fread(buf,1,sizeof(buf),stdin)) { //reads in from stdin and sends it sizeof(buf) at a time
+		totalbytes+=read_bytes[index];
+//		rel_send(sock, buf, readbytes);							 
+//		printf("sent a packet\n");	
+		memcpy(file[max_index++],buf,read_bytes[index++]);
 	}
+
+	index = 0;
+	while(index < max_index) {
+		rel_send(sock,file[index],read_bytes[index]);
+		printf("sent a packet\n");
+		index++;
+	}
+/*
+  new sender
+    uses 2d char array
+    reads in whole file 
+    then sends file row by row
+      this allows me to control which packet sent
+*/
+
 
 	int finished_msec = current_msec();
 	fprintf(stderr,"\nFinished sending, closing socket.\n");
