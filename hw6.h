@@ -11,7 +11,7 @@ struct hw6_hdr {
 
 int rel_socket(int domain, int type, int protocol);
 int rel_connect(int socket,struct sockaddr_in *toaddr,int addrsize);
-void rel_send(int sock, void *buf, int len);
+int rel_send(int sock, void *buf, int len);
 int rel_recv(int sock, void * buffer, size_t length);
 int rel_close(int sock);
 int rel_rtt(int sock);

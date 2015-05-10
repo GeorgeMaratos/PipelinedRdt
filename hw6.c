@@ -105,7 +105,9 @@ void cal_rtt(clock_t a, clock_t b) {
 //  printf("RTT:%d\n");
 }
 
-void rel_send(int sock, void *buf, int len)  //have rel_send, return the next sequence it wants
+int sequence_desired = 0;
+
+int rel_send(int sock, void *buf, int len)  //have rel_send, return the next sequence it wants
 {
 /*  
 naive sender (socket)
@@ -150,7 +152,7 @@ naive sender (socket)
 	  if(wait_for_ack(sequence_number,sock) == ACK_RCV) {  //process it and set sending packet accordingly
 	    sequence_number++;
 	    cal_rtt(start,clock());
-  	    return;
+  	    return ++sequence_desired;
 	  }
 	}
 
