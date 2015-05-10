@@ -11,8 +11,8 @@
 #include <netinet/in.h>
 #include "hw6.h"
 
-#define NOTHING 0
-#define ACK_RCV 1
+#define NOTHING -1
+#define ACK_RCV -2
 
 int sequence_number;
 int RTT = 0;
@@ -48,6 +48,7 @@ int rel_rtt(int socket) {
 		 return RTT;
 }
 
+int acks_received[100] = {0}; //assumes max ack is 100, does not reset be careful
 
 int wait_for_ack(int seq_num, int socket) { //wait for ack is done it just needs the right timeout
 /*
@@ -88,14 +89,28 @@ naive wait_for_ack2
 
   int retval;
 
+//variables for pipelined
+  int sequence_number;
+
   retval = select(socket+1,&fd,NULL,NULL,&tv);
   if(retval == -1) printf("select error\n");
   if(retval){  
     recv_count = recvfrom(socket, packet, MAX_PACKET, 0, (struct sockaddr*)&fromaddr, &addrlen);
 //    printf("%d\n",ntohl(hdr->ack_number));
-    if(seq_num == ntohl(hdr->ack_number))  //need to convert to host order byte
+    sequence_number = ntohl(hdr->ack_number);
+/*    if(seq_num == ntohl(hdr->ack_number))  //need to convert to host order byte, this is checking if i got what i sent back
       return ACK_RCV;
+    else if(0) return 1; //if determine repeat then return repeat
     else return NOTHING; 
+*/
+    if(acks_received[sequence_number] == 0) {
+      acks_received[sequence_number]++;
+      return ACK_RCV;
+    }
+    else {
+      acks_received[sequence_number]++;
+      return sequence_number;
+    }
   }
   else return NOTHING;		
 }
@@ -106,6 +121,8 @@ void cal_rtt(clock_t a, clock_t b) {
 }
 
 int sequence_desired = 0;
+
+//now need to read ack received and determine if it is a repeat
 
 int rel_send(int sock, void *buf, int len)  //have rel_send, return the next sequence it wants
 {
@@ -133,8 +150,8 @@ naive sender (socket)
 	//for timer
 	clock_t start, diff;
 
-
-
+        //for pipeline implementation
+	int wait_return;
 
 
 //2	
@@ -143,16 +160,22 @@ naive sender (socket)
 	send(sock, packet, sizeof(struct hw6_hdr)+len, 0);
 //3
 	while(1) {
-	  if(wait_for_ack(sequence_number,sock) == NOTHING) { //here I want to keep sending packets
+          wait_return = wait_for_ack(sequence_number,sock);
+	  switch(wait_return) {
+	  case NOTHING: //here I want to keep sending packets
 	    diff = clock() - start;
 //	    printf("time%d\n",diff / 100000);
 	    if((int)(diff) >= RTT) //on the timeout I need to send the right sequence number packet
 	      send(sock, packet, sizeof(struct hw6_hdr)+len, 0);
-	  }
-	  if(wait_for_ack(sequence_number,sock) == ACK_RCV) {  //process it and set sending packet accordingly
+	  break; 
+	  case ACK_RCV:   //process it and set sending packet accordingly
 	    sequence_number++;
 	    cal_rtt(start,clock());
   	    return ++sequence_desired;
+	  break; 
+	  default: //if anything besides these two are returned its a repeat sequence number
+	    return ++wait_return;
+	  break;
 	  }
 	}
 
