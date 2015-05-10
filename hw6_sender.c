@@ -10,6 +10,8 @@
 #include <arpa/inet.h>
 #include "hw6.h"
 
+#define Pipeline 1
+
 int main(int argc, char** argv) {	
 	if(argc<3) { fprintf(stderr,"Usage: hw6_sender <remote host> <port>\n"); exit(1);}
 
@@ -56,10 +58,19 @@ int main(int argc, char** argv) {
 	}
 
 	index = 0;
+  if(!Pipeline) {
 	while(index < max_index) {
 		index = rel_send(sock,file[index],read_bytes[index]);
 		printf("sent a packet\n");
 	}
+  }
+  else {
+  //here I will have a pipeline
+	while(index < max_index) {
+          pipeline_send(sock,file[index],read_bytes[index]);
+	  index++;
+	}
+  }
 /*
   new sender
     uses 2d char array

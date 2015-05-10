@@ -124,6 +124,18 @@ int sequence_desired = 0;
 
 //now need to read ack received and determine if it is a repeat
 
+int pipeline_sequence = 0;
+
+void pipeline_send(int sock, void *buf, int len) {
+
+//start making packet
+	char packet[1400];
+	struct hw6_hdr *hdr = (struct hw6_hdr*)packet;
+	hdr->sequence_number = htonl(pipeline_sequence++);
+	memcpy(hdr+1,buf,len); //hdr+1 is where the payload starts
+	send(sock, packet, sizeof(struct hw6_hdr)+len, 0);
+
+}
 int rel_send(int sock, void *buf, int len)  //have rel_send, return the next sequence it wants
 {
 /*  
