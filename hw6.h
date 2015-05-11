@@ -14,6 +14,7 @@ int rel_connect(int socket,struct sockaddr_in *toaddr,int addrsize);
 int rel_send(int sock, void *buf, int len);
 void pipeline_send(int sequence_number, int sock, void *buf, int len);
 int pipeline_reader(int socket);
+int hasTimeout(int socket, int max_index);
 int rel_recv(int sock, void * buffer, size_t length);
 int rel_close(int sock);
 int rel_rtt(int sock);

@@ -80,7 +80,8 @@ int main(int argc, char** argv) {
 	  index++;
 	}
 	//finish reading the whole pipe
-	while(pipeline_reader(sock));
+//	while(pipeline_reader(sock)); //not enough time?
+	while(!hasTimeout(sock,max_index));
 	//then determine if it needs to go back 
 	index = 0;
 	acked_so_far = 0;	

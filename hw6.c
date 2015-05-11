@@ -87,7 +87,22 @@ int pipeline_reader(int socket) {
   return 0;
 }
 
-
+int hasTimeout(int socket, int max_index) { //timeout will occur if true timeout happens or final ack is received
+//hook
+	clock_t start, diff;
+	if(acks_received[max_index -1] == 0) {
+	  start = clock();
+	  diff = clock() - start;
+	  while((int)(diff) <= 5) {
+	    if(acks_received[max_index -1] == 0)
+	      return 1;
+	    pipeline_reader(socket);
+	    diff = clock() - start;
+	  }
+	  return 1;
+	}
+	return 1;
+}
 
 int wait_for_ack(int seq_num, int socket) { //wait for ack is done it just needs the right timeout
 /*
@@ -198,6 +213,7 @@ naive sender (socket)
 	hdr->sequence_number = htonl(sequence_number);
 	memcpy(hdr+1,buf,len); //hdr+1 is where the payload starts
 
+//hook
 	//for timer
 	clock_t start, diff;
 
